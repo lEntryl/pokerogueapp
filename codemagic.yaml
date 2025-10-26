@@ -1,2 +1,5 @@
+workflows:
+  ios-build:
+    name: iOS Build Workflow
 git commit -m "Update Codemagic configuration"
 git push origin main
