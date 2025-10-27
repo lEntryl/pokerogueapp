@@ -1,45 +1,21 @@
 workflows:
-  ios-ad-hoc-build:
-    name: iOS Ad Hoc Build
-    
-    # 1. 빌드 환경 설정
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-
+  ios-app:
+    name: iOS Build
     environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-      
-      # 이전에 CodeMagic UI에서 설정한 그룹 이름을 사용합니다.
-      groups:
-        - AppleCredentials 
-        
       vars:
-        # 실제 앱의 번들 ID로 변경해야 합니다.
-        BUNDLE_ID: com.example.pokerogueapp 
-
-    # 2. 빌드 스크립트
+        XCODE_WORKSPACE: "ios/pokerogue-ios-wrapper.xcworkspace"
+        XCODE_SCHEME: "pokerogue-ios-wrapper"
+      xcode: 15.0
+      node: 18
+      cocoapods: default
     scripts:
-      # 패키지 다운로드
-      - name: Get Flutter packages
+      - name: Install dependencies
         script: |
-          flutter packages get
-          
-      # 코드 서명 설정 (APPLE_ID/PASSWORD 환경 변수 사용)
-      - name: Set up code signing
+          npm install -g expo-cli
+          npm install
+      - name: Build iOS app
         script: |
-          xcode-project use-profiles --user "$APPLE_ID" --password "$APPLE_PASSWORD" --type "adhoc"
-          
-      # iOS Ad Hoc 배포용 IPA 빌드
-      - name: Build iOS IPA
-        script: |
-          flutter build ipa --release
-          
-    # 3. 아티팩트 (결과물 저장 및 다운로드)
+          npx expo prebuild --platform ios
+          npx expo run:ios --no-install
     artifacts:
-      # .ipa 파일을 다운로드할 수 있도록 지정
-      - build/ios/ipa/*.ipa
-      # 크래시 보고용 dSYMs와 로그도 함께 저장
-      - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/Archives/**/**/*.xcarchive/dSYMs
+      - build/ios/**/*.ipa
